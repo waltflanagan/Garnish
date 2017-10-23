@@ -104,8 +104,8 @@ class GarnishTextStorageTests: XCTestCase {
         
         typeThisText(string: initialText)
         
-        var expected = TestDetector().detect(in: (initialText as NSString)).flatMap { $0.toRange() }
-        var actual = storage.ranges(of: .test, in: initialText.wholeStringRange).flatMap { $0.toRange() }
+        var expected = TestDetector().detect(in: (initialText as NSString)).flatMap { Range($0) }
+        var actual = storage.ranges(of: .test, in: initialText.wholeStringRange).flatMap { Range($0) }
         
         XCTAssertEqual(expected, actual)
         
@@ -115,8 +115,8 @@ class GarnishTextStorageTests: XCTestCase {
         storage.replaceCharacters(in: deletionRange, with: "")
         
         
-        expected = TestDetector().detect(in: (storage.string as NSString)).flatMap { $0.toRange() }
-        actual = storage.ranges(of: .test, in: NSRange(location: 0, length: storage.length)).flatMap { $0.toRange() }
+        expected = TestDetector().detect(in: (storage.string as NSString)).flatMap { Range($0) }
+        actual = storage.ranges(of: .test, in: NSRange(location: 0, length: storage.length)).flatMap { Range($0) }
         
         XCTAssertEqual(expected, actual)
         
@@ -134,10 +134,10 @@ class GarnishTextStorageTests: XCTestCase {
         
         let actualRanges = storage.ranges(of: .test, in: initialText.wholeStringRange)
         
-        XCTAssertEqual(expectedRanges.flatMap { $0.toRange() }, actualRanges.flatMap { $0.toRange() })
+        XCTAssertEqual(expectedRanges.flatMap { Range($0) }, actualRanges.flatMap { Range($0) })
         
         for range in actualRanges {
-            guard let color = storage.attribute(NSForegroundColorAttributeName, at: range.location, longestEffectiveRange: nil, in: range) as? UIColor else {
+            guard let color = storage.attribute(NSAttributedStringKey.foregroundColor, at: range.location, longestEffectiveRange: nil, in: range) as? UIColor else {
                 XCTFail("not a color")
                 continue
             }

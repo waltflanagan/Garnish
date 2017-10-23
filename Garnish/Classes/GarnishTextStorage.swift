@@ -49,6 +49,7 @@ public protocol GarnishDetector {
 
 private let GarnishAttributeKey = "GarnishAttributeKey"
 
+@objc(GARGarnishItem)
 private class GarnishItem: NSObject, NSCoding {
     let type: GarnishType
     let animatable: Bool
@@ -100,7 +101,7 @@ final public class GarnishTextStorage : NSTextStorage {
     func indexesNeedingLayers(in range: NSRange) -> IndexSet {
         let foundRanges = NSMutableIndexSet()
         
-        store.enumerateAttribute(GarnishAttributeKey, in: range, options: []) { (value, foundRange, _) in
+        store.enumerateAttribute(NSAttributedStringKey(rawValue: GarnishAttributeKey), in: range, options: []) { (value, foundRange, _) in
             guard let _ = value as? GarnishItem else { return }
 
             foundRanges.add(in: foundRange)
@@ -126,10 +127,10 @@ final public class GarnishTextStorage : NSTextStorage {
     private func detectIn(_ string: NSString, range: NSRange) -> IndexSet {
         
         if let color = self.textColor {
-            store.addAttribute(NSForegroundColorAttributeName, value: color, range: range)
+            store.addAttribute(NSAttributedStringKey.foregroundColor, value: color, range: range)
         }
         
-        store.removeAttribute(GarnishAttributeKey, range: range)
+        store.removeAttribute(NSAttributedStringKey(rawValue: GarnishAttributeKey), range: range)
         
         var previouslyDetectedIndexes = IndexSet()
         
@@ -138,17 +139,17 @@ final public class GarnishTextStorage : NSTextStorage {
             
             for detectedRange in detectedRanges {
                 
-                guard let indexRange = detectedRange.toRange() else { continue }
+                guard let indexRange = Range(detectedRange) else { continue }
                 
                 let canDetectEntityInRange = !previouslyDetectedIndexes.intersects(integersIn: indexRange)
                 
                 if canDetectEntityInRange {
                     
                     let item = GarnishItem(detector.attachmentType, animatable: detector.animates, highlightColor: detector.highlightColor, font: detector.highlightFont)
-                    store.addAttribute(GarnishAttributeKey, value: item, range: detectedRange)
+                    store.addAttribute(NSAttributedStringKey(rawValue: GarnishAttributeKey), value: item, range: detectedRange)
                     
                     let maskColor = textColor?.withAlphaComponent(0.0) ?? UIColor.clear
-                    store.addAttribute(NSForegroundColorAttributeName, value: maskColor, range: detectedRange)
+                    store.addAttribute(NSAttributedStringKey.foregroundColor, value: maskColor, range: detectedRange)
                     
                     previouslyDetectedIndexes.insert(integersIn: indexRange)
                 }
@@ -182,7 +183,7 @@ final public class GarnishTextStorage : NSTextStorage {
     private func ranges(in range: NSRange, passing test: (GarnishItem) -> Bool) -> [NSRange] {
         var ranges = [NSRange]()
         
-        store.enumerateAttribute(GarnishAttributeKey, in: range, options: []) { (value, range, _) in
+        store.enumerateAttribute(NSAttributedStringKey(rawValue: GarnishAttributeKey), in: range, options: []) { (value, range, _) in
             guard let item = value as? GarnishItem,
                 test(item) else {return}
             
@@ -194,7 +195,7 @@ final public class GarnishTextStorage : NSTextStorage {
     
     internal func highlightColor(at location: Int) -> UIColor? {
         
-        guard let item = store.attribute(GarnishAttributeKey, at: location, effectiveRange: nil) as? GarnishItem else {
+        guard let item = store.attribute(NSAttributedStringKey(rawValue: GarnishAttributeKey), at: location, effectiveRange: nil) as? GarnishItem else {
             return nil
         }
         
@@ -202,7 +203,7 @@ final public class GarnishTextStorage : NSTextStorage {
     }
     
     internal func highlightFont(at location: Int) -> UIFont? {
-        let item = store.attribute(GarnishAttributeKey, at: location, effectiveRange: nil) as? GarnishItem
+        let item = store.attribute(NSAttributedStringKey(rawValue: GarnishAttributeKey), at: location, effectiveRange: nil) as? GarnishItem
         return item?.font
     }
     
@@ -242,7 +243,7 @@ final public class GarnishTextStorage : NSTextStorage {
         
         var adjustedIndexes = IndexSet()
         
-        for index in  _preditRanges.map(adjust) {
+        for index in _preditRanges.map(adjust) {
             adjustedIndexes.insert(index)
         }
         
@@ -257,7 +258,7 @@ final public class GarnishTextStorage : NSTextStorage {
         removedRanges = IndexSet()
     }
     
-    override public func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [String : Any] {
+    override public func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedStringKey : Any] {
         return store.attributes(at: location, effectiveRange: range)
     }
     
@@ -274,7 +275,7 @@ final public class GarnishTextStorage : NSTextStorage {
         
     }
     
-    override public func setAttributes(_ attrs: [String : Any]?, range: NSRange) {
+    override public func setAttributes(_ attrs: [NSAttributedStringKey : Any]?, range: NSRange) {
         beginEditing()
         store.setAttributes(attrs, range: range)
         edited(.editedAttributes, range: range, changeInLength: 0)

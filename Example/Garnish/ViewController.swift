@@ -96,6 +96,7 @@ class ViewController: UIViewController {
         textView.garnishTextStorage.detectors = [Detector(), QuestionDetector()]
         
         textView.becomeFirstResponder()
+        
 
     }
 

@@ -241,11 +241,11 @@ extension GarnishTextView: NSLayoutManagerDelegate /*instantiation*/ {
         let textRange =  NSRange(location: 0, length: text.length)
         
         if let highlightColor =  garnishTextStorage.highlightColor(at: location) {
-             text.addAttribute(NSForegroundColorAttributeName, value: highlightColor, range: textRange)
+             text.addAttribute(NSAttributedStringKey.foregroundColor, value: highlightColor, range: textRange)
         }
         
         if let font =  garnishTextStorage.highlightFont(at: location) {
-            text.addAttribute(NSFontAttributeName, value: font, range: textRange)
+            text.addAttribute(NSAttributedStringKey.font, value: font, range: textRange)
             text.fixAttributes(in: textRange)
         }
         
@@ -474,8 +474,8 @@ extension GarnishTextView: NSLayoutManagerDelegate /*instantiation*/ {
                                       multiplier: constraint.multiplier,
                                       constant: constraint.constant)
             
-        } else if constraint.secondItem === originalItem {
-            return NSLayoutConstraint(item: constraint.firstItem,
+        } else if constraint.secondItem === originalItem, let firstItem = constraint.firstItem {
+            return NSLayoutConstraint(item: firstItem,
                                       attribute: constraint.firstAttribute,
                                       relatedBy: constraint.relation,
                                       toItem: self,
