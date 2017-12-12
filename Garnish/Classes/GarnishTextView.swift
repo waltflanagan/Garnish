@@ -297,7 +297,7 @@ extension GarnishTextView: NSLayoutManagerDelegate /*instantiation*/ {
     
     
     
-    private func adjustLayers() {
+    private func moveLayersToNewPosition() {
         var newLayers = [Int:CATextLayer]()
         
         for (location, layer) in layers {
@@ -310,7 +310,7 @@ extension GarnishTextView: NSLayoutManagerDelegate /*instantiation*/ {
     }
     
     
-    private func deleteLayers() {
+    private func deleteLayersOfDeletedCharacters() {
         let backspacing:Bool  = garnishTextStorage.changeInLength < 0
         
         guard backspacing else { return }
@@ -328,7 +328,7 @@ extension GarnishTextView: NSLayoutManagerDelegate /*instantiation*/ {
     }
     
     
-    private func removeLayers() {
+    private func animateOutLayersNoLongerNeeded() {
         
         for (_, index) in garnishTextStorage.removedRanges.enumerated() {
             
@@ -364,7 +364,7 @@ extension GarnishTextView: NSLayoutManagerDelegate /*instantiation*/ {
         }
     }
     
-    private func highlightNewLayers() {
+    private func animateNewLayers() {
         
         let indexes = NSIndexSet(indexSet: garnishTextStorage.addedRanges)
         
@@ -394,12 +394,12 @@ extension GarnishTextView: NSLayoutManagerDelegate /*instantiation*/ {
         guard garnishTextStorage.editedMask.contains(.editedCharacters) else { return }
         
   
-        deleteLayers()
-        adjustLayers()
-        removeLayers()
+        deleteLayersOfDeletedCharacters()
+        moveLayersToNewPosition()
+        animateOutLayersNoLongerNeeded()
         addNewLayers()
         updateLayers()
-        highlightNewLayers()
+        animateNewLayers()
         
     }
 
